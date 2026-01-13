@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menú Digital</title>
+  <style>
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f5f5f5; color:#333; }
+    header { background:#00665f; color:#fff; padding:20px; }
+    .header { display:flex; align-items:center; justify-content:center; gap:15px; }
+    .logo { max-width:70px; }
+    .header-text { text-align:left; }
+    header h1 { margin:0; font-size:1.8rem; }
+    header p { margin:5px 0 0; font-size:0.9rem; opacity:0.9; }
+    .container { max-width:600px; margin:0 auto; padding:15px; }
+    .category { margin-top:25px; }
+    .category h2 { border-bottom:2px solid #ddd; padding-bottom:5px; font-size:1.3rem; }
+    .item { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px; margin:10px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+    .item-info { max-width:65%; }
+    .item-info h3 { margin:0; font-size:1rem; }
+    .item-info p { margin:4px 0 0; font-size:0.85rem; color:#666; }
+    .price { font-weight:bold; }
+    button { background:#1f2933; color:#fff; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; }
+    button:active { transform:scale(0.97); }
+    .cart { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #ddd; padding:10px; max-width:600px; margin:auto; }
+    .cart h3 { margin:0 0 5px; }
+    .cart-item { display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; margin:4px 0; }
+    .cart-item button { background:#c0392b; padding:2px 8px; }
+    .total { font-weight:bold; margin-top:5px; }
+    .whatsapp { margin-top:8px; width:100%; padding:10px; font-size:1rem; background:#25D366; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <img src="logo.png" alt="ScreenFlavor" class="logo">
+  <div class="header-text">
+    <h1>ScreenFlavor</h1>
+    <p>Menú Digital</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="category">
+    <h2>Bebidas Calientes</h2>
+    <div class="item">
+      <div class="item-info"><h3>Café</h3><p>Café de la casa</p></div>
+      <div>
+        <span class="price">$100</span><br>
+        <button onclick="addItem('Café',100)">Agregar</button>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-info"><h3>Té Chai</h3><p>Preparado con tecnicas especiales</p></div>
+      <div>
+        <span class="price">$120</span><br>
+        <button onclick="addItem('Té Chai',120)">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="category">
+    <h2>Bebidas Gourmet</h2>
+    <div class="item">
+      <div class="item-info"><h3>Vino Tinto</h3><p>Reserva de la casa</p></div>
+      <div>
+        <span class="price">$680</span><br>
+        <button onclick="addItem('Vino Tinto',680)">Agregar</button>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-info"><h3>Glenfilddich 18</h3><p>Whisky puro de malta</p></div>
+      <div>
+        <span class="price">$765</span><br>
+        <button onclick="addItem('Glenfilddich 18',765)">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+    <div class="category">
+    <h2>Especiales de Tierra y Mar</h2>
+    <div class="item">
+      <div class="item-info"><h3>Quesabirria Gourmet</h3><p>Reconocida internacionalmente</p></div>
+      <div>
+        <span class="price">$850</span><br>
+        <button onclick="addItem('Quesabirria Gourmet',850)">Agregar</button>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-info"><h3>Salmon</h3><p>En salsa de frutos tropicales</p></div>
+      <div>
+        <span class="price">$765</span><br>
+        <button onclick="addItem('Salmon',765)">Agregar</button>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item-info"><h3>Barbacoa de Cordero</h3><p>Directamente del horno subterraneo</p></div>
+      <div>
+        <span class="price">$765</span><br>
+        <button onclick="addItem('Barbacoa de Cordero',765)">Agregar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="cart" id="cart">
+  <h3>🛒 Tu pedido</h3>
+  <div id="cartItems"></div>
+  <div class="total" id="total"></div>
+  <button class="whatsapp" id="whatsappBtn" onclick="sendWhatsApp()" style="display:none;">Enviar pedido por WhatsApp</button>
+</div>
+
+<script>
+  const cart = {};
+
+  function addItem(name, price) {
+    if (!cart[name]) cart[name] = { qty: 0, price };
+    cart[name].qty++;
+    renderCart();
+  }
+
+  function renderCart() {
+    const container = document.getElementById('cartItems');
+    container.innerHTML = '';
+    let total = 0;
+    let hasItems = false;
+
+    for (let item in cart) {
+      const line = cart[item];
+      const subtotal = line.qty * line.price;
+      total += subtotal;
+      hasItems = true;
+
+      container.innerHTML += `<div class="cart-item">${item} x${line.qty} <span>$${subtotal}</span> <button onclick="removeItem('${item}')">−</button></div>`;
+    }
+
+    document.getElementById('total').innerText = hasItems ? 'Total: $' + total : '';
+    document.getElementById('whatsappBtn').style.display = hasItems ? 'block' : 'none';
+  }
+
+  function removeItem(name) {
+    if (!cart[name]) return;
+    cart[name].qty--;
+    if (cart[name].qty <= 0) delete cart[name];
+    renderCart();
+  }
+
+  function sendWhatsApp() {
+    let message = 'Hola 👋, nuevo pedido:%0A%0A';
+    let total = 0;
+
+    for (let item in cart) {
+      const line = cart[item];
+      const subtotal = line.qty * line.price;
+      total += subtotal;
+      message += `• ${item} x${line.qty} - $${subtotal}%0A`;
+    }
+
+    message += `%0A*Total: $${total}*`;
+    const phone = '529622142140';
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  }
+</script>
+
+</body>
+</html>
