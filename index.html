@@ -12,22 +12,40 @@
     .header-text { text-align:left; }
     header h1 { margin:0; font-size:1.8rem; }
     header p { margin:5px 0 0; font-size:0.9rem; opacity:0.9; }
-    .container { max-width:600px; margin:0 auto; padding:15px; }
+
+    .container { max-width:600px; margin:0 auto; padding:15px; padding-bottom:220px; }
+
     .category { margin-top:25px; }
     .category h2 { border-bottom:2px solid #ddd; padding-bottom:5px; font-size:1.3rem; }
+
     .item { display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px; margin:10px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
     .item-info { max-width:65%; }
     .item-info h3 { margin:0; font-size:1rem; }
     .item-info p { margin:4px 0 0; font-size:0.85rem; color:#666; }
     .price { font-weight:bold; }
+
     button { background:#1f2933; color:#fff; border:none; border-radius:8px; padding:6px 10px; cursor:pointer; }
-    button:active { transform:scale(0.97); }
-    .cart { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #ddd; padding:10px; max-width:600px; margin:auto; }
-    .cart h3 { margin:0 0 5px; }
-    .cart-item { display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; margin:4px 0; }
-    .cart-item button { background:#c0392b; padding:2px 8px; }
-    .total { font-weight:bold; margin-top:5px; }
+    button:active { transform:scale(0.95); }
+
+    .cart { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #ddd; padding:12px; max-width:600px; margin:auto; display:none; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+
+    .cart h3 { margin:0 0 8px; }
+    .cart-item { display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; margin:6px 0; gap:6px; }
+    .controls button { padding:2px 8px; }
+    .controls .plus { background:#00665f; }
+    .controls .minus { background:#c0392b; }
+
+    .total { font-weight:bold; margin-top:8px; }
+
+    textarea { width:100%; margin-top:8px; border-radius:8px; padding:6px; resize:none; }
+
     .whatsapp { margin-top:8px; width:100%; padding:10px; font-size:1rem; background:#25D366; }
+
+    @media (max-width:480px) {
+      header h1 { font-size:1.4rem; }
+      .logo { max-width:55px; }
+    }
   </style>
 </head>
 <body>
@@ -108,8 +126,9 @@
 <div class="cart" id="cart">
   <h3>🛒 Tu pedido</h3>
   <div id="cartItems"></div>
+  <textarea id="note" rows="2" placeholder="Notas (ej. sin azúcar, para llevar)"></textarea>
   <div class="total" id="total"></div>
-  <button class="whatsapp" id="whatsappBtn" onclick="sendWhatsApp()" style="display:none;">Enviar pedido por WhatsApp</button>
+  <button class="whatsapp" onclick="sendWhatsApp()">Enviar pedido por WhatsApp</button>
 </div>
 
 <script>
@@ -121,8 +140,15 @@
     renderCart();
   }
 
+  function changeQty(name, delta) {
+    cart[name].qty += delta;
+    if (cart[name].qty <= 0) delete cart[name];
+    renderCart();
+  }
+
   function renderCart() {
     const container = document.getElementById('cartItems');
+    const cartBox = document.getElementById('cart');
     container.innerHTML = '';
     let total = 0;
     let hasItems = false;
@@ -133,18 +159,20 @@
       total += subtotal;
       hasItems = true;
 
-      container.innerHTML += `<div class="cart-item">${item} x${line.qty} <span>$${subtotal}</span> <button onclick="removeItem('${item}')">−</button></div>`;
+      container.innerHTML += `
+        <div class="cart-item">
+          ${item} ($${line.price})
+          <div class="controls">
+            <button class="minus" onclick="changeQty('${item}',-1)">−</button>
+            <span>x${line.qty}</span>
+            <button class="plus" onclick="changeQty('${item}',1)">+</button>
+          </div>
+          <strong>$${subtotal}</strong>
+        </div>`;
     }
 
     document.getElementById('total').innerText = hasItems ? 'Total: $' + total : '';
-    document.getElementById('whatsappBtn').style.display = hasItems ? 'block' : 'none';
-  }
-
-  function removeItem(name) {
-    if (!cart[name]) return;
-    cart[name].qty--;
-    if (cart[name].qty <= 0) delete cart[name];
-    renderCart();
+    cartBox.style.display = hasItems ? 'block' : 'none';
   }
 
   function sendWhatsApp() {
@@ -158,9 +186,11 @@
       message += `• ${item} x${line.qty} - $${subtotal}%0A`;
     }
 
-    message += `%0A*Total: $${total}*`;
-    const phone = '529622142140';
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    const note = document.getElementById('note').value;
+    if (note.trim()) message += `%0A📝 Nota: ${encodeURIComponent(note)}`;
+
+    message += `%0A%0A*Total: $${total}*`;
+    window.open('https://wa.me/529622142140?text=' + message, '_blank');
   }
 </script>
 
